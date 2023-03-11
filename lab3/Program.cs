@@ -20,6 +20,8 @@
     }
 
     struct StateMachine {
+        const string NotFoundRulesState = "@";
+
         public List<string> SetOfStates, Alphabet, FinalStates;
         public string S0, Info;
         public List<Rule> Rules;
@@ -42,22 +44,36 @@
         public int GetExpressionNumberOfMatchingCharacters(string expression) {
             string elem;
             int amount = 0;
+            State next;
             State.Element = ""; State.StateValue = S0;
             
             for (int i = 0; i < expression.Length; i++) {
                 elem = expression[i].ToString();
                 State.Element = elem;
-                State = NextState(State);
-                if (CheckExit(State)) {
+                next = NextState(State);
+                if (CheckExit(next)) {
                     break;
                 }
+                State = next;
                 amount++;
+            }
+
+            if (amount < expression.Length && State.StateValue != NotFoundRulesState) {
+                State.Element = "";
+                next = NextState(State);
+                if (next.StateValue != NotFoundRulesState) {
+                    State = next;
+                }
             }
 
             return amount;
         }
 
         private bool CheckExit(State state) {
+            if (state.StateValue == NotFoundRulesState) {
+                return true;
+            }
+
             for (int i = 0; i < FinalStates.Count; i++) {
                 if (state.StateValue == FinalStates[i]) {
                     return true;
@@ -66,7 +82,7 @@
             
             return false;
         }
-
+    
         private State NextState(State state) {
             for(int i = 0; i < Rules.Count; i++) {
                 if (state.CompareTo(Rules[i].State)) {
@@ -74,7 +90,7 @@
                 }
             }
 
-            return new State(FinalStates[0], state.Element); 
+            return new State(NotFoundRulesState, state.Element); 
         }
     }
 
